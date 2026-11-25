@@ -1,0 +1,108 @@
+name: agent-platform
+x-db: &db
+  PLATFORM_DB_URL: jdbc:postgresql://postgres:5432/agents
+  PLATFORM_DB_USER: agent_runtime
+  PLATFORM_DB_PASSWORD: ${PLATFORM_DB_PASSWORD:?Run ./scripts/init-local.sh}
+  PLATFORM_TEMPORAL_TARGET: temporal:7233
+  PLATFORM_MODEL: ${PLATFORM_MODEL:-demo}
+  OPENAI_MODEL: ${OPENAI_MODEL:-gpt-4o-mini}
+  PLATFORM_ALLOWED_MODELS: ${PLATFORM_ALLOWED_MODELS:-}
+  PLATFORM_COST_INPUT_USD_PER_MILLION: ${PLATFORM_COST_INPUT_USD_PER_MILLION:-}
+  PLATFORM_COST_OUTPUT_USD_PER_MILLION: ${PLATFORM_COST_OUTPUT_USD_PER_MILLION:-}
+  PLATFORM_EMBEDDING_MODE: ${PLATFORM_EMBEDDING_MODE:-lexical}
+  PLATFORM_EMBEDDING_PROVIDER: ${PLATFORM_EMBEDDING_PROVIDER:-none}
+  PLATFORM_EMBEDDING_REVISION: ${PLATFORM_EMBEDDING_REVISION:-}
+  PLATFORM_EMBEDDING_MODEL: ${PLATFORM_EMBEDDING_MODEL:-text-embedding-3-small}
+  OPENAI_BASE_URL: ${OPENAI_BASE_URL:-https://api.openai.com}
+  OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+services:
+  postgres:
+    image: pgvector/pgvector:pg17@sha256:b513c48566e4777cd3370451400000c78eda6a08131d68f4c31d4a76f27bd8fd
+    environment:
+      POSTGRES_DB: agents
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Run ./scripts/init-local.sh}
+      PLATFORM_DB_PASSWORD: ${PLATFORM_DB_PASSWORD}
+      PLATFORM_MIGRATION_PASSWORD: ${PLATFORM_MIGRATION_PASSWORD}
+    volumes:
+      - pg-data:/var/lib/postgresql/data
+      - ./deployments/postgres/init.sh:/docker-entrypoint-initdb.d/10-platform.sh:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d agents"]
+      interval: 3s
+      timeout: 3s
+      retries: 40
+  temporal:
+    image: temporalio/temporal:1.5.1@sha256:597a5dbbcc6e7716b326dde4a51622d5ea0879eb0cf06ff8a94381361d0a987d
+    command: ["server", "start-dev", "--ip", "0.0.0.0", "--db-filename", "/home/temporal/history.sqlite", "--headless"]
+    volumes: [temporal-data:/home/temporal]
+    healthcheck:
+      test: ["CMD", "temporal", "operator", "cluster", "health", "--address", "127.0.0.1:7233"]
+      interval: 5s
+      timeout: 4s
+      retries: 30
+  server:
+    build: {context: ., args: {MODULE: platform-server}}
+    environment:
+      <<: *db
+      SPRING_PROFILES_ACTIVE: local
+      PLATFORM_MIGRATION_USER: agent_owner
+      PLATFORM_MIGRATION_PASSWORD: ${PLATFORM_MIGRATION_PASSWORD}
+      PLATFORM_LOCAL_PASSWORD: ${PLATFORM_LOCAL_PASSWORD}
+      PLATFORM_REVIEWER_PASSWORD: ${PLATFORM_REVIEWER_PASSWORD}
+    depends_on:
+      postgres: {condition: service_healthy}
+      temporal: {condition: service_healthy}
+    ports: ["127.0.0.1:${PLATFORM_API_PORT:-18080}:8080"]
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8080/actuator/health/readiness"]
+      interval: 5s
+      timeout: 4s
+      retries: 40
+  worker:
+    build: {context: ., args: {MODULE: platform-worker}}
+    environment:
+      <<: *db
+      PLATFORM_MODEL: ${PLATFORM_MODEL:-demo}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENAI_BASE_URL: ${OPENAI_BASE_URL:-https://api.openai.com}
+      OPENAI_MODEL: ${OPENAI_MODEL:-gpt-4o-mini}
+    depends_on:
+      server: {condition: service_healthy}
+    restart: on-failure
+  browser-test:
+    profiles: [verification]
+    build: {context: ./platform-studio, dockerfile: Dockerfile.test}
+    init: true
+    shm_size: 256mb
+    environment:
+      STUDIO_TEST_URL: http://studio:3000
+      PLATFORM_LOCAL_PASSWORD: ${PLATFORM_LOCAL_PASSWORD}
+      PLATFORM_REVIEWER_PASSWORD: ${PLATFORM_REVIEWER_PASSWORD}
+    depends_on:
+      studio: {condition: service_started}
+      worker: {condition: service_started}
+  smoke:
+    image: python:3.12-alpine
+    profiles: [verification]
+    environment:
+      PLATFORM_TEST_URL: http://server:8080
+      PLATFORM_LOCAL_PASSWORD: ${PLATFORM_LOCAL_PASSWORD}
+      PLATFORM_REVIEWER_PASSWORD: ${PLATFORM_REVIEWER_PASSWORD}
+    volumes:
+      - ./scripts/smoke.py:/verification/scripts/smoke.py:ro
+      - ./examples:/verification/examples:ro
+    command: ["python", "/verification/scripts/smoke.py"]
+    depends_on:
+      server: {condition: service_healthy}
+      worker: {condition: service_started}
+  studio:
+    build: ./platform-studio
+    environment:
+      PLATFORM_API_URL: http://server:8080
+      PLATFORM_LOCAL_LOGIN: "true"
+    ports: ["127.0.0.1:${PLATFORM_STUDIO_PORT:-13000}:3000"]
+    depends_on:
+      server: {condition: service_healthy}
+volumes:
+  pg-data:
+  temporal-data:

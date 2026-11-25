@@ -1,0 +1,55 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: daily-brief
+spec:
+  schedule: "0 8 * * *"
+  timeZone: Etc/UTC
+  concurrencyPolicy: Forbid
+  startingDeadlineSeconds: 1800
+  successfulJobsHistoryLimit: 2
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 3
+      activeDeadlineSeconds: 180
+      template:
+        spec:
+          restartPolicy: Never
+          automountServiceAccountToken: false
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 10001
+            seccompProfile: {type: RuntimeDefault}
+          containers:
+            - name: deliver
+              image: python:3.13-alpine
+              command: [python, -B, /opt/publisher/publish.py]
+              securityContext:
+                readOnlyRootFilesystem: true
+                allowPrivilegeEscalation: false
+                capabilities: {drop: [ALL]}
+              resources:
+                requests: {cpu: 10m, memory: 24Mi}
+                limits: {memory: 64Mi}
+              env:
+                - name: JOB_NAME
+                  valueFrom:
+                    fieldRef:
+                      fieldPath: metadata.labels['batch.kubernetes.io/job-name']
+                - {name: OIDC_TOKEN_URL, value: "https://identity.company.example/realms/agents/protocol/openid-connect/token"}
+                - {name: PLATFORM_TRIGGER_URL, value: "https://api.company.example/api/v1/triggers/daily/versions/1.0.0/events"}
+                - {name: EVENT_TYPE, value: "report.due"}
+                - {name: EVENT_SOURCE, value: "urn:daily-clock"}
+                - {name: EVENT_DATA, value: '"Prepare the daily brief."'}
+                - name: OIDC_CLIENT_ID
+                  valueFrom:
+                    secretKeyRef: {name: daily-brief-producer, key: client-id}
+                - name: OIDC_CLIENT_SECRET
+                  valueFrom:
+                    secretKeyRef: {name: daily-brief-producer, key: client-secret}
+              volumeMounts:
+                - {name: publisher, mountPath: /opt/publisher, readOnly: true}
+          volumes:
+            - name: publisher
+              configMap: {name: workflow-event-publisher}

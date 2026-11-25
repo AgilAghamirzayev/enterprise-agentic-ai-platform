@@ -1,0 +1,12 @@
+#!/bin/sh
+set -eu
+psql -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB" <<'SQL'
+\getenv runtime_password PLATFORM_DB_PASSWORD
+\getenv owner_password PLATFORM_MIGRATION_PASSWORD
+CREATE EXTENSION IF NOT EXISTS vector;
+CREATE ROLE agent_runtime LOGIN NOSUPERUSER NOBYPASSRLS PASSWORD :'runtime_password';
+CREATE ROLE agent_owner LOGIN NOSUPERUSER NOBYPASSRLS PASSWORD :'owner_password';
+REVOKE CREATE ON SCHEMA public FROM PUBLIC;
+GRANT CREATE, USAGE ON SCHEMA public TO agent_owner;
+GRANT USAGE ON SCHEMA public TO agent_runtime;
+SQL

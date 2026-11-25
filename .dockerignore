@@ -1,0 +1,7 @@
+**
+!platform-server/
+!platform-server/target/
+!platform-server/target/*.jar
+!platform-worker/
+!platform-worker/target/
+!platform-worker/target/*.jar

@@ -1,0 +1,17 @@
+{{- $root := . }}
+{{- range $component := list "server" "studio" }}
+{{- $selector := dict "root" $root "component" $component }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "agent.name" $root }}-{{ $component }}
+  labels: {{- include "agent.selector" $selector | nindent 4 }}
+spec:
+  type: ClusterIP
+  selector: {{- include "agent.selector" $selector | nindent 4 }}
+  ports:
+    - name: http
+      port: {{ ternary 8080 3000 (eq $component "server") }}
+      targetPort: http
+{{- end }}

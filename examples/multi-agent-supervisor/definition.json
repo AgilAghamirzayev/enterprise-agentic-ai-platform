@@ -1,0 +1,58 @@
+{
+  "allowedTools": [
+    "word-count",
+    "uppercase"
+  ],
+  "start": "route",
+  "nodes": [
+    {
+      "id": "route",
+      "type": "SUPERVISOR",
+      "branches": [
+        "specialists",
+        "direct"
+      ]
+    },
+    {
+      "id": "direct",
+      "type": "AGENT",
+      "next": "done"
+    },
+    {
+      "id": "specialists",
+      "type": "TRANSFORM",
+      "field": "text",
+      "next": "fork"
+    },
+    {
+      "id": "fork",
+      "type": "PARALLEL",
+      "branches": [
+        "words",
+        "caps"
+      ],
+      "next": "merge"
+    },
+    {
+      "id": "words",
+      "type": "TOOL",
+      "tool": "word-count",
+      "next": "merge"
+    },
+    {
+      "id": "caps",
+      "type": "TOOL",
+      "tool": "uppercase",
+      "next": "merge"
+    },
+    {
+      "id": "merge",
+      "type": "JOIN",
+      "next": "done"
+    },
+    {
+      "id": "done",
+      "type": "END"
+    }
+  ]
+}

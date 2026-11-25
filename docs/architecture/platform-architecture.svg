@@ -1,0 +1,108 @@
+<svg xmlns="http://www.w3.org/2000/svg" font-family="-apple-system-body, ui-sans-serif, -apple-system, system-ui, &quot;Segoe UI&quot;, Helvetica, &quot;Apple Color Emoji&quot;, Arial, sans-serif, &quot;Segoe UI Emoji&quot;, &quot;Segoe UI Symbol&quot;" font-weight="400" data-d-component="svg" fill="currentColor" style="color:rgb(237, 237, 237)" viewBox="0 0 760 840" width="760" height="840" role="img" aria-labelledby="diagram-title diagram-desc">
+  <title id="diagram-title">Enterprise Agentic AI Platform reference architecture</title>
+  <desc id="diagram-desc">Clients enter through the API and security layer. The control plane manages definitions, and the execution plane runs workflows with Temporal. Integration, storage and shared services support both planes.</desc>
+  <rect width="760" height="840" rx="8" fill="#0f172a" />
+  <text x="380" y="21" text-anchor="middle" fill="currentColor" font-size="15" font-weight="600">Enterprise Agentic AI Platform</text>
+  <rect x="8" y="39" width="180" height="38" rx="5" stroke="#64748b" fill="#64748b" fill-opacity=".09" />
+  <text x="98" y="62" fill="currentColor" font-size="11.5" text-anchor="middle">Java SDK / CLI</text>
+  <rect x="196" y="39" width="180" height="38" rx="5" stroke="#64748b" fill="#64748b" fill-opacity=".09" />
+  <text x="286" y="62" fill="currentColor" font-size="11.5" text-anchor="middle">Agent Studio</text>
+  <rect x="384" y="39" width="180" height="38" rx="5" stroke="#64748b" fill="#64748b" fill-opacity=".09" />
+  <text x="474" y="62" fill="currentColor" font-size="11.5" text-anchor="middle">Enterprise Apps</text>
+  <rect x="572" y="39" width="180" height="38" rx="5" stroke="#64748b" fill="#64748b" fill-opacity=".09" />
+  <text x="662" y="62" fill="currentColor" font-size="11.5" text-anchor="middle">REST API Clients</text>
+  <path d="M98 77 V91 H662 V77 M380 91 V106" stroke="#64748b" fill="none" />
+  <rect x="8" y="106" width="744" height="43" rx="6" fill="#64748b" fill-opacity=".12" stroke="#64748b" />
+  <text x="380" y="123" text-anchor="middle" font-weight="600" font-size="13" fill="currentColor">API &amp; Security Layer</text>
+  <text x="380" y="139" text-anchor="middle" font-size="10.5" fill="currentColor">OIDC · RBAC · API Keys · Quotas · Tenant Context</text>
+  <path d="M380 149 V166" stroke="#64748b" />
+  <rect x="8" y="166" width="744" height="145" rx="8" stroke="#6366f1" fill="#6366f1" fill-opacity=".055" />
+  <text x="380" y="186" fill="currentColor" text-anchor="middle" font-size="14" font-weight="600">Control Plane</text>
+  <rect x="20" y="196" width="236" height="28" rx="4" stroke="#818cf8" stroke-opacity=".7" fill="#6366f1" fill-opacity=".08" />
+  <text x="138" y="214" text-anchor="middle" font-size="11.5" fill="currentColor">Agent Registry</text>
+  <rect x="262" y="196" width="236" height="28" rx="4" stroke="#818cf8" stroke-opacity=".7" fill="#6366f1" fill-opacity=".08" />
+  <text x="380" y="214" text-anchor="middle" font-size="11.5" fill="currentColor">Workflow Registry</text>
+  <rect x="504" y="196" width="236" height="28" rx="4" stroke="#818cf8" stroke-opacity=".7" fill="#6366f1" fill-opacity=".08" />
+  <text x="622" y="214" text-anchor="middle" font-size="11.5" fill="currentColor">Prompt Registry</text>
+  <rect x="20" y="231" width="236" height="28" rx="4" stroke="#818cf8" stroke-opacity=".7" fill="#6366f1" fill-opacity=".08" />
+  <text x="138" y="249" text-anchor="middle" font-size="11.5" fill="currentColor">Tool Registry</text>
+  <rect x="262" y="231" width="236" height="28" rx="4" stroke="#818cf8" stroke-opacity=".7" fill="#6366f1" fill-opacity=".08" />
+  <text x="380" y="249" text-anchor="middle" font-size="11.5" fill="currentColor">Model Configuration</text>
+  <rect x="504" y="231" width="236" height="28" rx="4" stroke="#818cf8" stroke-opacity=".7" fill="#6366f1" fill-opacity=".08" />
+  <text x="622" y="249" text-anchor="middle" font-size="11.5" fill="currentColor">Policy Management</text>
+  <rect x="20" y="266" width="236" height="28" rx="4" stroke="#818cf8" stroke-opacity=".7" fill="#6366f1" fill-opacity=".08" />
+  <text x="138" y="284" text-anchor="middle" font-size="11.5" fill="currentColor">Tenant Management</text>
+  <rect x="262" y="266" width="236" height="28" rx="4" stroke="#818cf8" stroke-opacity=".7" fill="#6366f1" fill-opacity=".08" />
+  <text x="380" y="284" text-anchor="middle" font-size="11.5" fill="currentColor">Deployment Management</text>
+  <rect x="504" y="266" width="236" height="28" rx="4" stroke="#818cf8" stroke-opacity=".7" fill="#6366f1" fill-opacity=".08" />
+  <text x="622" y="284" text-anchor="middle" font-size="11.5" fill="currentColor">Secrets References</text>
+  <path d="M380 311 V328" stroke="#64748b" />
+  <rect x="8" y="328" width="744" height="202" rx="8" stroke="#0d9488" fill="#0d9488" fill-opacity=".05" />
+  <text x="380" y="349" text-anchor="middle" fill="currentColor" font-size="14" font-weight="600">Execution Plane</text>
+  <rect x="21" y="361" width="718" height="40" rx="5" stroke="#0d9488" fill="#0d9488" fill-opacity=".12" />
+  <text x="380" y="378" text-anchor="middle" font-size="12" font-weight="600" fill="currentColor">Durable Workflow Orchestration - Temporal</text>
+  <text x="380" y="392" font-size="10" fill="currentColor" text-anchor="middle">Workflow State · Scheduling · Recovery · Approval · Cancellation</text>
+  <path d="M380 401 V411" stroke="#64748b" />
+  <rect x="21" y="414" width="235" height="28" rx="4" stroke="#0d9488" stroke-opacity=".7" fill="#0d9488" fill-opacity=".08" />
+  <text x="138" y="432" font-size="11.5" text-anchor="middle" fill="currentColor">Agent Runtime</text>
+  <rect x="262" y="414" width="235" height="28" rx="4" stroke="#0d9488" stroke-opacity=".7" fill="#0d9488" fill-opacity=".08" />
+  <text x="379" y="432" font-size="11.5" text-anchor="middle" fill="currentColor">Multi-Agent Engine</text>
+  <rect x="503" y="414" width="235" height="28" rx="4" stroke="#0d9488" stroke-opacity=".7" fill="#0d9488" fill-opacity=".08" />
+  <text x="620" y="432" font-size="11.5" text-anchor="middle" fill="currentColor">Execution Scheduler</text>
+  <rect x="21" y="449" width="235" height="28" rx="4" stroke="#0d9488" stroke-opacity=".7" fill="#0d9488" fill-opacity=".08" />
+  <text x="138" y="467" font-size="11.5" text-anchor="middle" fill="currentColor">Tool Executor</text>
+  <rect x="262" y="449" width="235" height="28" rx="4" stroke="#0d9488" stroke-opacity=".7" fill="#0d9488" fill-opacity=".08" />
+  <text x="379" y="467" font-size="11.5" text-anchor="middle" fill="currentColor">Policy Enforcement</text>
+  <rect x="503" y="449" width="235" height="28" rx="4" stroke="#0d9488" stroke-opacity=".7" fill="#0d9488" fill-opacity=".08" />
+  <text x="620" y="467" font-size="11.5" text-anchor="middle" fill="currentColor">Human-in-the-Loop</text>
+  <rect x="21" y="484" width="235" height="28" rx="4" stroke="#0d9488" stroke-opacity=".7" fill="#0d9488" fill-opacity=".08" />
+  <text x="138" y="502" font-size="11.5" text-anchor="middle" fill="currentColor">Model Gateway</text>
+  <rect x="262" y="484" width="235" height="28" rx="4" stroke="#0d9488" stroke-opacity=".7" fill="#0d9488" fill-opacity=".08" />
+  <text x="379" y="502" font-size="11.5" text-anchor="middle" fill="currentColor">Context &amp; Memory</text>
+  <rect x="503" y="484" width="235" height="28" rx="4" stroke="#0d9488" stroke-opacity=".7" fill="#0d9488" fill-opacity=".08" />
+  <text x="620" y="502" font-size="11.5" text-anchor="middle" fill="currentColor">Budget Manager</text>
+  <path d="M380 530 V547" stroke="#64748b" />
+  <rect x="8" y="547" width="744" height="99" rx="8" stroke="#2563eb" fill="#2563eb" fill-opacity=".05" />
+  <text x="380" y="568" text-anchor="middle" font-size="14" font-weight="600" fill="currentColor">Integration &amp; Intelligence Layer</text>
+  <rect x="20" y="579" width="176" height="24" rx="4" stroke="#2563eb" stroke-opacity=".6" fill="#2563eb" fill-opacity=".06" />
+  <text x="108" y="595" fill="currentColor" font-size="11" text-anchor="middle">Spring AI</text>
+  <rect x="202" y="579" width="176" height="24" rx="4" stroke="#2563eb" stroke-opacity=".6" fill="#2563eb" fill-opacity=".06" />
+  <text x="290" y="595" fill="currentColor" font-size="11" text-anchor="middle">MCP Client</text>
+  <rect x="384" y="579" width="176" height="24" rx="4" stroke="#2563eb" stroke-opacity=".6" fill="#2563eb" fill-opacity=".06" />
+  <text x="472" y="595" fill="currentColor" font-size="11" text-anchor="middle">HTTP Tools</text>
+  <rect x="566" y="579" width="176" height="24" rx="4" stroke="#2563eb" stroke-opacity=".6" fill="#2563eb" fill-opacity=".06" />
+  <text x="654" y="595" fill="currentColor" font-size="11" text-anchor="middle">Java SPI</text>
+  <rect x="20" y="609" width="176" height="24" rx="4" stroke="#2563eb" stroke-opacity=".6" fill="#2563eb" fill-opacity=".06" />
+  <text x="108" y="625" fill="currentColor" font-size="11" text-anchor="middle">RAG / Retrieval</text>
+  <rect x="202" y="609" width="176" height="24" rx="4" stroke="#2563eb" stroke-opacity=".6" fill="#2563eb" fill-opacity=".06" />
+  <text x="290" y="625" fill="currentColor" font-size="11" text-anchor="middle">Embeddings</text>
+  <rect x="384" y="609" width="176" height="24" rx="4" stroke="#2563eb" stroke-opacity=".6" fill="#2563eb" fill-opacity=".06" />
+  <text x="472" y="625" fill="currentColor" font-size="11" text-anchor="middle">Custom Providers</text>
+  <rect x="566" y="609" width="176" height="24" rx="4" stroke="#2563eb" stroke-opacity=".6" fill="#2563eb" fill-opacity=".06" />
+  <text x="654" y="625" fill="currentColor" font-size="11" text-anchor="middle">External Agents</text>
+  <path d="M380 646 V664" stroke="#64748b" />
+  <rect x="8" y="664" width="744" height="67" rx="8" stroke="#64748b" fill="#64748b" fill-opacity=".06" />
+  <text x="380" y="684" text-anchor="middle" font-size="13" font-weight="600" fill="currentColor">Data Plane</text>
+  <rect x="19" y="694" width="138" height="26" rx="4" stroke="#64748b" stroke-opacity=".6" fill="#64748b" fill-opacity=".07" />
+  <text x="88" y="711" fill="currentColor" font-size="10.5" text-anchor="middle">PostgreSQL</text>
+  <rect x="165" y="694" width="138" height="26" rx="4" stroke="#64748b" stroke-opacity=".6" fill="#64748b" fill-opacity=".07" />
+  <text x="234" y="711" fill="currentColor" font-size="10.5" text-anchor="middle">Vector Store</text>
+  <rect x="311" y="694" width="138" height="26" rx="4" stroke="#64748b" stroke-opacity=".6" fill="#64748b" fill-opacity=".07" />
+  <text x="380" y="711" fill="currentColor" font-size="10.5" text-anchor="middle">Object Storage</text>
+  <rect x="457" y="694" width="138" height="26" rx="4" stroke="#64748b" stroke-opacity=".6" fill="#64748b" fill-opacity=".07" />
+  <text x="526" y="711" fill="currentColor" font-size="10.5" text-anchor="middle">Redis</text>
+  <rect x="603" y="694" width="138" height="26" rx="4" stroke="#64748b" stroke-opacity=".6" fill="#64748b" fill-opacity=".07" />
+  <text x="672" y="711" fill="currentColor" font-size="10.5" text-anchor="middle">Temporal Storage</text>
+  <rect x="8" y="747" width="744" height="77" rx="8" stroke="#d97706" fill="#d97706" fill-opacity=".055" />
+  <text x="380" y="768" text-anchor="middle" font-size="13" font-weight="600" fill="currentColor">Cross-cutting Platform Services</text>
+  <rect x="19" y="781" width="138" height="29" rx="4" stroke="#d97706" stroke-opacity=".6" fill="#d97706" fill-opacity=".07" />
+  <text x="88" y="800" font-size="11" fill="currentColor" text-anchor="middle">Audit</text>
+  <rect x="165" y="781" width="138" height="29" rx="4" stroke="#d97706" stroke-opacity=".6" fill="#d97706" fill-opacity=".07" />
+  <text x="234" y="800" font-size="11" fill="currentColor" text-anchor="middle">Observability</text>
+  <rect x="311" y="781" width="138" height="29" rx="4" stroke="#d97706" stroke-opacity=".6" fill="#d97706" fill-opacity=".07" />
+  <text x="380" y="800" font-size="11" fill="currentColor" text-anchor="middle">Evaluation</text>
+  <rect x="457" y="781" width="138" height="29" rx="4" stroke="#d97706" stroke-opacity=".6" fill="#d97706" fill-opacity=".07" />
+  <text x="526" y="800" font-size="11" fill="currentColor" text-anchor="middle">Cost Tracking</text>
+  <rect x="603" y="781" width="138" height="29" rx="4" stroke="#d97706" stroke-opacity=".6" fill="#d97706" fill-opacity=".07" />
+  <text x="672" y="800" font-size="11" fill="currentColor" text-anchor="middle">Security</text>
+</svg>

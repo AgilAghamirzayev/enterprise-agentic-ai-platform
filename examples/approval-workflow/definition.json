@@ -1,0 +1,20 @@
+{
+  "allowedTools": [
+    "create-ticket"
+  ],
+  "start": "ticket",
+  "nodes": [
+    {
+      "id": "ticket",
+      "type": "TOOL",
+      "tool": "create-ticket",
+      "role": "approver",
+      "timeoutSeconds": 180,
+      "next": "done"
+    },
+    {
+      "id": "done",
+      "type": "END"
+    }
+  ]
+}

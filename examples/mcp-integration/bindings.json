@@ -1,0 +1,13 @@
+[
+  {
+    "name": "catalog-search",
+    "type": "mcp",
+    "tenant": "local",
+    "endpoint": "https://catalog.example.org/mcp",
+    "remoteTool": "search_catalog",
+    "tokenEnv": "CATALOG_SERVICE_TOKEN",
+    "arguments": [
+      "query"
+    ]
+  }
+]

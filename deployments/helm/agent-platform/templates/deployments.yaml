@@ -1,0 +1,120 @@
+{{- $root := . }}
+{{- range $component := list "server" "worker" "studio" }}
+{{- $config := index $root.Values $component }}
+{{- $selector := dict "root" $root "component" $component }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "agent.name" $root }}-{{ $component }}
+  labels: {{- include "agent.selector" $selector | nindent 4 }}
+spec:
+  replicas: {{ $config.replicas }}
+  selector:
+    matchLabels: {{- include "agent.selector" $selector | nindent 6 }}
+  template:
+    metadata:
+      labels: {{- include "agent.selector" $selector | nindent 8 }}
+    spec:
+      automountServiceAccountToken: false
+      terminationGracePeriodSeconds: 60
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        seccompProfile: {type: RuntimeDefault}
+      {{- with $root.Values.imagePullSecrets }}
+      imagePullSecrets: {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: {{ $component }}
+          image: {{ printf "%s/%s:%s" (trimSuffix "/" $root.Values.imagePrefix) $component $root.Values.imageTag | quote }}
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities: {drop: [ALL]}
+          resources: {{- toYaml $config.resources | nindent 12 }}
+          {{- if and (eq $component "worker") (eq $root.Values.model.mode "catalog") $root.Values.model.credentialsSecret }}
+          envFrom:
+            - secretRef:
+                name: {{ $root.Values.model.credentialsSecret | quote }}
+          {{- end }}
+          env:
+            {{- if ne $component "studio" }}
+            {{- include "agent.backendEnv" $root | nindent 12 }}
+            {{- end }}
+            {{- if eq $component "server" }}
+            - name: PLATFORM_MIGRATION_USER
+              valueFrom:
+                secretKeyRef: {name: {{ $root.Values.database.migrationSecret | quote }}, key: username}
+            - name: PLATFORM_MIGRATION_PASSWORD
+              valueFrom:
+                secretKeyRef: {name: {{ $root.Values.database.migrationSecret | quote }}, key: password}
+            - name: PLATFORM_OIDC_ISSUER
+              value: {{ $root.Values.oidc.issuer | quote }}
+            - name: PLATFORM_OIDC_AUDIENCE
+              value: {{ $root.Values.oidc.audience | quote }}
+            {{- else if eq $component "worker" }}
+            - name: PLATFORM_JAVA_AGENTS
+              value: {{ $root.Values.worker.javaAgents | quote }}
+            - name: PLATFORM_WORKER_CONCURRENCY
+              value: {{ $root.Values.worker.concurrency | quote }}
+            {{- if eq $root.Values.model.mode "openai" }}
+            - name: OPENAI_BASE_URL
+              value: {{ $root.Values.model.baseUrl | quote }}
+            - name: OPENAI_API_KEY
+              valueFrom:
+                secretKeyRef: {name: {{ $root.Values.model.secret | quote }}, key: api-key}
+            {{- end }}
+            {{- if $root.Values.connectors.secret }}
+            - name: PLATFORM_CONNECTORS_FILE
+              value: /etc/agent/connectors/connectors.json
+            {{- end }}
+            {{- else }}
+            - name: PLATFORM_OIDC_ISSUER
+              value: {{ $root.Values.oidc.issuer | quote }}
+            - name: PLATFORM_OIDC_CLIENT_ID
+              value: {{ $root.Values.oidc.studioClientId | quote }}
+            - name: PLATFORM_OIDC_SCOPE
+              value: {{ $root.Values.oidc.scope | quote }}
+            {{- with $root.Values.tracing.langfuseProjectUrl }}
+            - name: PLATFORM_LANGFUSE_PROJECT_URL
+              value: {{ . | quote }}
+            {{- end }}
+            - name: PLATFORM_API_URL
+              value: http://{{ include "agent.name" $root }}-server:8080
+            {{- end }}
+          {{- if ne $component "worker" }}
+          ports:
+            - {name: http, containerPort: {{ ternary 8080 3000 (eq $component "server") }}, protocol: TCP}
+          startupProbe:
+            httpGet: {path: {{ ternary "/actuator/health/liveness" "/" (eq $component "server") }}, port: http}
+            failureThreshold: 30
+            periodSeconds: 5
+          readinessProbe:
+            httpGet: {path: {{ ternary "/actuator/health/readiness" "/" (eq $component "server") }}, port: http}
+          livenessProbe:
+            httpGet: {path: {{ ternary "/actuator/health/liveness" "/" (eq $component "server") }}, port: http}
+          {{- end }}
+          volumeMounts:
+            - {name: tmp, mountPath: /tmp}
+            {{- if and (ne $component "studio") (eq $root.Values.model.mode "catalog") }}
+            - {name: models, mountPath: /etc/agent/models, readOnly: true}
+            {{- end }}
+            {{- if and (eq $component "worker") $root.Values.connectors.secret }}
+            - {name: connectors, mountPath: /etc/agent/connectors, readOnly: true}
+            {{- end }}
+      volumes:
+        {{- if and (ne $component "studio") (eq $root.Values.model.mode "catalog") }}
+        - name: models
+          configMap:
+            name: {{ required "Set model.catalogConfigMap in catalog mode" $root.Values.model.catalogConfigMap | quote }}
+        {{- end }}
+        - name: tmp
+          emptyDir: {sizeLimit: 128Mi}
+        {{- if and (eq $component "worker") $root.Values.connectors.secret }}
+        - name: connectors
+          secret:
+            secretName: {{ $root.Values.connectors.secret | quote }}
+        {{- end }}
+{{- end }}

@@ -1,0 +1,42 @@
+services:
+  oidc-fixture:
+    profiles: [verification]
+    image: node:22-alpine
+    command: ["node","/app/oidc.mjs"]
+    volumes: ["./deployments/verification/oidc.mjs:/app/oidc.mjs:ro"]
+    healthcheck:
+      test: ["CMD","node","-e","fetch('http://localhost:9000/.well-known/openid-configuration').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 2s
+      timeout: 2s
+      retries: 30
+  oidc-api:
+    extends: {file: ./compose.yaml, service: server}
+    profiles: [verification]
+    ports: !reset []
+    environment:
+      SPRING_PROFILES_ACTIVE: oidc
+      PLATFORM_OIDC_ISSUER: http://oidc-fixture:9000
+    depends_on:
+      oidc-fixture: {condition: service_healthy}
+  oidc-studio:
+    extends: {file: ./compose.yaml, service: studio}
+    profiles: [verification]
+    ports: !reset []
+    environment:
+      PLATFORM_API_URL: http://oidc-api:8080
+      PLATFORM_LOCAL_LOGIN: "false"
+      PLATFORM_OIDC_ISSUER: http://oidc-fixture:9000
+      PLATFORM_OIDC_CLIENT_ID: verification-studio
+    depends_on:
+      oidc-api: {condition: service_healthy}
+  oidc-browser:
+    profiles: [verification]
+    build: {context: ./platform-studio, dockerfile: Dockerfile.test}
+    network_mode: service:oidc-studio
+    init: true
+    shm_size: 256mb
+    environment:
+      STUDIO_TEST_URL: http://localhost:3000
+      STUDIO_TEST_OIDC: "true"
+    depends_on:
+      oidc-studio: {condition: service_started}

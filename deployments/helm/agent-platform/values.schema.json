@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "imagePrefix": {"type":"string","minLength":1,"pattern":"^[a-z0-9][a-z0-9.:/-]*$"},
+    "imageTag": {"type":"string","pattern":"^[A-Za-z0-9_][A-Za-z0-9_.-]{0,127}$"},
+    "server": {"$ref":"#/definitions/workload"},
+    "worker": {"allOf":[{"$ref":"#/definitions/workload"},{"properties":{"concurrency":{"type":"integer","minimum":1,"maximum":256},"javaAgents":{"type":"string"}}}]},
+    "studio": {"$ref":"#/definitions/workload"},
+    "model": {"properties":{"mode":{"enum":["demo","openai","catalog"]},"baseUrl":{"$ref":"#/definitions/https"},"name":{"type":"string","minLength":1},"allowed":{"type":"string"}}},
+    "oidc": {"properties":{"issuer":{"$ref":"#/definitions/https"},"audience":{"type":"string","minLength":1}}},
+    "temporal": {"properties":{"target":{"type":"string","minLength":1},"namespace":{"type":"string","minLength":1},"tls":{"type":"boolean"}}},
+    "tracing": {"properties":{"langfuseProjectUrl":{"type":"string","pattern":"^(https://[^?#]+/project/[A-Za-z0-9_-]+/?)?$"},"samplingProbability":{"type":"number","minimum":0,"maximum":1}}},
+    "pricing": {"properties":{"inputPerMillion":{"$ref":"#/definitions/rate"},"outputPerMillion":{"$ref":"#/definitions/rate"}}},
+    "embeddings": {"properties":{"mode":{"enum":["lexical","learned"]},"baseUrl":{"$ref":"#/definitions/https"},"revision":{"type":"string"}}}
+  },
+  "definitions": {
+    "workload": {"type":"object","properties":{"replicas":{"type":"integer","minimum":1},"resources":{"type":"object"}}},
+    "https": {"type":"string","pattern":"^https://"},
+    "rate": {"type":"string","pattern":"^([0-9]+([.][0-9]{1,6})?)?$"}
+  }
+}

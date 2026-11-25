@@ -1,0 +1,15 @@
+{
+  "start": "answer",
+  "nodes": [
+    {
+      "id": "answer",
+      "type": "AGENT",
+      "prompt": "Greet the user.",
+      "next": "done"
+    },
+    {
+      "id": "done",
+      "type": "END"
+    }
+  ]
+}

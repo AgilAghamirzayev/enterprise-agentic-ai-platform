@@ -1,0 +1,35 @@
+{
+  "start": "check-invoice",
+  "invokeRoles": [
+    "operator"
+  ],
+  "allowedTools": [
+    "create-ticket"
+  ],
+  "limits": {
+    "maxSteps": 5,
+    "maxToolCalls": 1,
+    "timeoutSeconds": 300
+  },
+  "nodes": [
+    {
+      "id": "check-invoice",
+      "type": "CONDITION",
+      "expression": "variancePercent > 5",
+      "onTrue": "review-exception",
+      "onFalse": "finish"
+    },
+    {
+      "id": "review-exception",
+      "type": "TOOL",
+      "tool": "create-ticket",
+      "role": "approver",
+      "timeoutSeconds": 180,
+      "next": "finish"
+    },
+    {
+      "id": "finish",
+      "type": "END"
+    }
+  ]
+}

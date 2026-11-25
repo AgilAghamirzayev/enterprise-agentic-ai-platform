@@ -1,0 +1,15 @@
+{
+  "start": "read",
+  "nodes": [
+    {
+      "id": "read",
+      "type": "AGENT",
+      "knowledgeBase": "handbook",
+      "next": "done"
+    },
+    {
+      "id": "done",
+      "type": "END"
+    }
+  ]
+}

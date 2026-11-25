@@ -1,0 +1,18 @@
+{
+  "start": "lookup",
+  "allowedTools": [
+    "catalog-search"
+  ],
+  "nodes": [
+    {
+      "id": "lookup",
+      "type": "TOOL",
+      "tool": "catalog-search",
+      "next": "finish"
+    },
+    {
+      "id": "finish",
+      "type": "END"
+    }
+  ]
+}

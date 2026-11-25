@@ -1,0 +1,17 @@
+{
+  "allowedTools": [
+    "uppercase"
+  ],
+  "start": "choose",
+  "nodes": [
+    {
+      "id": "choose",
+      "type": "TOOL_CALLING",
+      "next": "done"
+    },
+    {
+      "id": "done",
+      "type": "END"
+    }
+  ]
+}

@@ -1,0 +1,7 @@
+FROM mcr.microsoft.com/playwright:v1.58.2-noble
+WORKDIR /opt/tests
+COPY package*.json ./
+RUN npm ci --no-audit
+COPY playwright.config.ts .
+COPY tests tests
+ENTRYPOINT ["npx", "--no-install", "playwright", "test", "--reporter=line"]

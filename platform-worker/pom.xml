@@ -1,0 +1,24 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent><groupId>io.agentplatform</groupId><artifactId>platform-parent</artifactId><version>0.1.0</version></parent>
+  <artifactId>platform-worker</artifactId>
+  <dependencies>
+    <dependency><groupId>io.agentplatform</groupId><artifactId>platform-plan</artifactId><version>${project.version}</version></dependency>
+    <dependency><groupId>io.agentplatform</groupId><artifactId>platform-store</artifactId><version>${project.version}</version></dependency>
+    <dependency><groupId>io.agentplatform</groupId><artifactId>platform-connectors</artifactId><version>${project.version}</version></dependency>
+    <dependency><groupId>io.agentplatform</groupId><artifactId>agent-spring-boot-starter</artifactId><version>${project.version}</version></dependency>
+    <dependency><groupId>io.agentplatform</groupId><artifactId>platform-testkit</artifactId><version>${project.version}</version></dependency>
+    <dependency><groupId>org.springframework.ai</groupId><artifactId>spring-ai-starter-model-openai</artifactId></dependency>
+    <dependency><groupId>io.temporal</groupId><artifactId>temporal-spring-boot-starter</artifactId><version>${temporal.version}</version></dependency>
+    <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-actuator</artifactId></dependency>
+    <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-jdbc</artifactId></dependency>
+    <dependency><groupId>io.micrometer</groupId><artifactId>micrometer-registry-otlp</artifactId></dependency>
+    <dependency><groupId>io.micrometer</groupId><artifactId>micrometer-tracing-bridge-otel</artifactId></dependency>
+    <dependency><groupId>io.opentelemetry</groupId><artifactId>opentelemetry-exporter-otlp</artifactId></dependency>
+    <dependency><groupId>org.postgresql</groupId><artifactId>postgresql</artifactId></dependency>
+    <dependency><groupId>io.temporal</groupId><artifactId>temporal-testing</artifactId><version>${temporal.version}</version><scope>test</scope></dependency>
+    <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-test</artifactId><scope>test</scope></dependency>
+    <dependency><groupId>org.testcontainers</groupId><artifactId>testcontainers</artifactId><scope>test</scope></dependency>
+  </dependencies>
+  <build><plugins><plugin><groupId>org.springframework.boot</groupId><artifactId>spring-boot-maven-plugin</artifactId><executions><execution><goals><goal>repackage</goal></goals></execution></executions></plugin></plugins></build>
+</project>

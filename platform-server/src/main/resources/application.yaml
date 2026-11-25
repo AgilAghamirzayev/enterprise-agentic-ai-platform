@@ -1,0 +1,57 @@
+spring:
+  application:
+    name: platform-server
+  ai:
+    model:
+      chat: none
+      embedding: ${PLATFORM_EMBEDDING_PROVIDER:none}
+      image: none
+      moderation: none
+      audio:
+        speech: none
+        transcription: none
+    openai:
+      base-url: ${OPENAI_BASE_URL:https://api.openai.com}
+      api-key: ${OPENAI_API_KEY:}
+      embedding.options:
+        model: ${PLATFORM_EMBEDDING_MODEL:text-embedding-3-small}
+        dimensions: 256
+  datasource:
+    url: ${PLATFORM_DB_URL}
+    username: ${PLATFORM_DB_USER:agent_runtime}
+    password: ${PLATFORM_DB_PASSWORD}
+    hikari:
+      maximum-pool-size: 12
+  liquibase:
+    change-log: classpath:db/changelog/db.changelog-master.yaml
+    user: ${PLATFORM_MIGRATION_USER}
+    password: ${PLATFORM_MIGRATION_PASSWORD}
+  mvc:
+    problemdetails:
+      enabled: true
+  jackson:
+    deserialization:
+      fail-on-unknown-properties: true
+platform:
+  temporal:
+    target: ${PLATFORM_TEMPORAL_TARGET:localhost:7233}
+    namespace: ${PLATFORM_TEMPORAL_NAMESPACE:default}
+    tls: ${PLATFORM_TEMPORAL_TLS:false}
+  oidc:
+    issuer: ${PLATFORM_OIDC_ISSUER:}
+    audience: ${PLATFORM_OIDC_AUDIENCE:agent-platform}
+  local:
+    admin-password: ${PLATFORM_LOCAL_PASSWORD:}
+    reviewer-password: ${PLATFORM_REVIEWER_PASSWORD:}
+management:
+  endpoints.web.exposure.include: health,prometheus
+  endpoint.health.probes.enabled: true
+  tracing.sampling.probability: ${PLATFORM_TRACE_SAMPLE:0}
+  otlp.metrics.export:
+    enabled: ${PLATFORM_METRICS_OTLP_ENABLED:false}
+    url: ${OTEL_EXPORTER_OTLP_METRICS_ENDPOINT:http://localhost:4318/v1/metrics}
+  otlp.tracing.endpoint: ${OTEL_EXPORTER_OTLP_TRACES_ENDPOINT:http://localhost:4318/v1/traces}
+server:
+  shutdown: graceful
+springdoc:
+  api-docs.path: /api/v1/openapi

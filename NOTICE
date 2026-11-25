@@ -1,0 +1,3 @@
+Enterprise Agentic AI Platform
+
+This distribution includes the Apache Maven Wrapper scripts from the Apache Maven project, licensed under the Apache License, Version 2.0. Runtime and build dependencies retain their respective licenses. The release packaging script produces a CycloneDX inventory of Maven components.

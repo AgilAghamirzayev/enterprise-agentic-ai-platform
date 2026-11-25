@@ -1,0 +1,139 @@
+x-tracing: &tracing
+  PLATFORM_TRACE_SAMPLE: ${PLATFORM_TRACE_SAMPLE:-1.0}
+  OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: http://lf-collector:4318/v1/traces
+
+x-langfuse: &langfuse
+  DATABASE_URL: postgresql://langfuse:${LF_POSTGRES:?}@lf-postgres:5432/langfuse
+  CLICKHOUSE_MIGRATION_URL: clickhouse://lf-clickhouse:9000
+  CLICKHOUSE_URL: http://lf-clickhouse:8123
+  CLICKHOUSE_USER: langfuse
+  CLICKHOUSE_PASSWORD: ${LF_CLICKHOUSE:?}
+  CLICKHOUSE_CLUSTER_ENABLED: "false"
+  REDIS_HOST: lf-redis
+  REDIS_AUTH: ${LF_REDIS:?}
+  SALT: ${LF_SALT:?}
+  ENCRYPTION_KEY: ${LF_ENCRYPTION:?}
+  NEXTAUTH_URL: http://localhost:${LANGFUSE_PORT:-13001}
+  TELEMETRY_ENABLED: "false"
+  LANGFUSE_S3_EVENT_UPLOAD_ENDPOINT: http://lf-storage:9000
+  LANGFUSE_S3_EVENT_UPLOAD_BUCKET: langfuse
+  LANGFUSE_S3_EVENT_UPLOAD_REGION: us-east-1
+  LANGFUSE_S3_EVENT_UPLOAD_FORCE_PATH_STYLE: "true"
+  LANGFUSE_S3_EVENT_UPLOAD_ACCESS_KEY_ID: langfuse
+  LANGFUSE_S3_EVENT_UPLOAD_SECRET_ACCESS_KEY: ${LF_STORAGE:?}
+
+x-dependencies: &dependencies
+  lf-postgres: {condition: service_healthy}
+  lf-clickhouse: {condition: service_healthy}
+  lf-redis: {condition: service_healthy}
+  lf-storage: {condition: service_healthy}
+
+services:
+  server:
+    environment: *tracing
+  worker:
+    environment: *tracing
+
+  studio:
+    environment:
+      PLATFORM_LANGFUSE_PROJECT_URL: http://localhost:${LANGFUSE_PORT:-13001}/project/agent-platform
+  lf-postgres:
+    networks: [lf-data]
+    image: postgres:17-alpine@sha256:a77aa70e641402a21411b92b721c58d10f23b50ae5fdd2333efd22d166e1e5f7
+    environment:
+      POSTGRES_USER: langfuse
+      POSTGRES_PASSWORD: ${LF_POSTGRES:?}
+    volumes: [lf-postgres:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "langfuse"]
+      interval: 5s
+      retries: 24
+  lf-redis:
+    networks: [lf-data]
+    image: redis:8.2-alpine@sha256:da23c2478319ceb4903857d77a2fd7aa5137d9e9d4c8165dafbacedac6403e95
+    environment: {REDISCLI_AUTH: "${LF_REDIS:?}"}
+    command: [sh, -ec, 'exec redis-server --requirepass "$$REDISCLI_AUTH" --maxmemory-policy noeviction --appendonly yes']
+    volumes: [lf-redis:/data]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      retries: 24
+  lf-clickhouse:
+    networks: [lf-data]
+    image: clickhouse/clickhouse-server:26.3.62.3@sha256:de3e47c64078aa196dae2349e048fc98ba81947f651f5c20e06e46baea8ae40a
+    environment:
+      CLICKHOUSE_USER: langfuse
+      CLICKHOUSE_PASSWORD: ${LF_CLICKHOUSE:?}
+    volumes: [lf-clickhouse:/var/lib/clickhouse]
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:8123/ping"]
+      interval: 5s
+      retries: 24
+  lf-storage:
+    networks: [lf-data]
+    image: cgr.dev/chainguard/minio@sha256:f6243be11aaaa2fe654d260558e2b3fcef50135e78a3abfd0db802b13444f059
+    entrypoint: sh
+    command: ["-ec", "mkdir -p /data/langfuse && exec minio server /data"]
+    environment:
+      MINIO_ROOT_USER: langfuse
+      MINIO_ROOT_PASSWORD: ${LF_STORAGE:?}
+    volumes: [lf-storage:/data]
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 5s
+      retries: 24
+  lf-web:
+    networks: [default, lf-data]
+    image: docker.langfuse.com/langfuse/langfuse:4.86.0@sha256:514f9851ce7c8c8288a12620f99911f80aecc5aa49a43fe07eecf02cfc96546e
+    depends_on: *dependencies
+    ports: ["127.0.0.1:${LANGFUSE_PORT:-13001}:3000"]
+    environment:
+      <<: *langfuse
+      NEXTAUTH_SECRET: ${LF_SESSION:?}
+      AUTH_DISABLE_SIGNUP: "true"
+      LANGFUSE_INIT_ORG_ID: agent-platform-local
+      LANGFUSE_INIT_PROJECT_ID: agent-platform
+      LANGFUSE_INIT_PROJECT_NAME: Enterprise Agentic AI Platform
+      LANGFUSE_INIT_PROJECT_PUBLIC_KEY: ${LF_PUBLIC_KEY:?}
+      LANGFUSE_INIT_PROJECT_SECRET_KEY: ${LF_SECRET_KEY:?}
+      LANGFUSE_INIT_USER_EMAIL: admin@platform.local
+      LANGFUSE_INIT_USER_PASSWORD: ${LF_ADMIN_PASSWORD:?}
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://lf-web:3000/api/public/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 60s
+  lf-worker:
+    networks: [lf-data]
+    image: docker.langfuse.com/langfuse/langfuse-worker:4.86.0@sha256:cc6a5dbdcf0e164f94f3a78bcee97e971f7f22ed3ac374ea9c40e64455903811
+    depends_on: *dependencies
+    environment: *langfuse
+  lf-test:
+    profiles: [verification]
+    build: {context: ./platform-studio, dockerfile: Dockerfile.test}
+    init: true
+    shm_size: 256mb
+    environment:
+      STUDIO_TEST_URL: http://studio:3000
+      STUDIO_TEST_LANGFUSE: "true"
+      LANGFUSE_PORT: ${LANGFUSE_PORT:-13001}
+      PLATFORM_LOCAL_PASSWORD: ${PLATFORM_LOCAL_PASSWORD:?}
+      LF_PUBLIC_KEY: ${LF_PUBLIC_KEY:?}
+      LF_SECRET_KEY: ${LF_SECRET_KEY:?}
+      LF_ADMIN_PASSWORD: ${LF_ADMIN_PASSWORD:?}
+  lf-collector:
+    image: otel/opentelemetry-collector-contrib:0.140.0@sha256:ffc818ee108d0b934fd14207fd87ff247c9b64f344ed349d0b66c166c18a2312
+    command: ["--config=/etc/otelcol/langfuse.yaml"]
+    volumes: [./deployments/langfuse/collector.yaml:/etc/otelcol/langfuse.yaml:ro]
+    environment:
+      LANGFUSE_ENDPOINT: http://lf-web:3000/api/public/otel
+      LANGFUSE_PUBLIC_KEY: ${LF_PUBLIC_KEY:?}
+      LANGFUSE_SECRET_KEY: ${LF_SECRET_KEY:?}
+volumes:
+  lf-postgres:
+  lf-redis:
+  lf-clickhouse:
+  lf-storage:
+networks:
+  lf-data: {internal: true}

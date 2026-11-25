@@ -1,0 +1,20 @@
+{
+  "start": "process",
+  "limits": {
+    "maxModelCalls": 6,
+    "maxTokens": 24000,
+    "maxOutputTokens": 512
+  },
+  "nodes": [
+    {
+      "id": "process",
+      "type": "AGENT",
+      "javaRef": "brief-reviewer:1.0.0",
+      "next": "done"
+    },
+    {
+      "id": "done",
+      "type": "END"
+    }
+  ]
+}
