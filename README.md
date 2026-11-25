@@ -4,7 +4,7 @@
 
 A self-hosted Java platform for running AI agents and workflows. Publish an immutable agent version, start it in Studio and follow its execution through model calls, tool use and human approvals. Temporal resumes the workflow after worker restarts. PostgreSQL stores run state, usage and audit records.
 
-[Quickstart](#start-locally) · [Java SDK](docs/developer-guide/java-sdk.md) · [Examples](#examples-and-interfaces) · [Architecture](#architecture) · [Contributing](CONTRIBUTING.md) · [Apache 2.0](LICENSE)
+[Documentation](docs/README.md) · [Quickstart](#start-locally) · [Java SDK](docs/developer-guide/java-sdk.md) · [Examples](#examples-and-interfaces) · [Architecture](#architecture) · [Contributing](CONTRIBUTING.md) · [Apache 2.0](LICENSE)
 
 ## Start locally
 
@@ -42,6 +42,8 @@ Open [Agent Studio](http://localhost:13000). Choose **Local account**. Sign in a
 2. Open **Playground**, select the published version and enter `"Hello from Studio"` as JSON input.
 3. Start the execution. The detail panel displays the completed steps and result. Open **Audit** to inspect the corresponding events.
 4. In **Workflows**, paste an example definition to try parallel execution or a human approval. Each published version is immutable. Save changes under a new version.
+
+Follow the [Studio walkthrough](docs/tutorials/studio.md) to approve a ticket as a second user. For service-to-service integration, run the [HTTP client walkthrough](docs/tutorials/http-api.md).
 
 To stop the local services and keep your data, run `docker compose stop`.
 
